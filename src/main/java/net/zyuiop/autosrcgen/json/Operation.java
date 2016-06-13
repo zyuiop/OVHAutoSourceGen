@@ -1,13 +1,16 @@
 package net.zyuiop.autosrcgen.json;
 
+import java.util.List;
+
 /**
  * @author zyuiop
  */
 public class Operation {
-	private String httpMethod;
-	private Object noAuthentication;
-	private String description;
-	private String responseType;
+	private String          httpMethod;
+	private Object          noAuthentication;
+	private String          description;
+	private String          responseType;
+	private List<Parameter> parameters;
 
 	public Operation() {
 	}
@@ -21,7 +24,7 @@ public class Operation {
 	}
 
 	public boolean isNoAuthentication() {
-		return (noAuthentication instanceof Boolean ? (Boolean) noAuthentication : (((Integer) noAuthentication) == 1));
+		return (noAuthentication instanceof Boolean ? (Boolean) noAuthentication : (((Number) noAuthentication).intValue() == 1));
 	}
 
 	// WTF FUCK YOU OVH
@@ -51,5 +54,13 @@ public class Operation {
 
 	public void setResponseType(String responseType) {
 		this.responseType = responseType;
+	}
+
+	public List<Parameter> getParameters() {
+		return parameters;
+	}
+
+	public void setParameters(List<Parameter> parameters) {
+		this.parameters = parameters;
 	}
 }

@@ -3,15 +3,17 @@ package net.zyuiop.autosrcgen.json;
 import net.zyuiop.autosrcgen.AutomaticSourceGen;
 import net.zyuiop.autosrcgen.types.TypeIdentifier;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author zyuiop
  */
 public class Model {
-	private String namespace;
-	private String id;
-	private String description;
+	private String       namespace;
+	private String       id;
+	private String       description;
+	private List<String> generics;
 
 	// Facultatif : enum
 	private Object[] enumValues;
@@ -92,11 +94,28 @@ public class Model {
 		}
 
 		for (Property property : properties.values()) {
+			if (isGeneric(property.getFullType()))
+				continue;
+
 			if (AutomaticSourceGen.currentTypeIdentifier.get(property.getFullType()) == null) {
 				System.out.println("  x|-> Can't write " + getNamespace() + "." + getId() + " yet : missing " + property.getFullType());
 				return false;
 			}
 		}
 		return true;
+	}
+
+	public boolean isGeneric(String param) {
+		if (getGenerics() == null)
+			return false;
+		return getGenerics().contains(param.replace("[", "").replace("]", ""));
+	}
+
+	public List<String> getGenerics() {
+		return generics;
+	}
+
+	public void setGenerics(List<String> generics) {
+		this.generics = generics;
 	}
 }

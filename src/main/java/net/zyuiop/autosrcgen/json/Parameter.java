@@ -4,7 +4,7 @@ package net.zyuiop.autosrcgen.json;
  * @author zyuiop
  */
 public class Parameter {
-	private int required;
+	private Object required;
 	private String dataType;
 	private String paramType;
 	private String name;
@@ -13,15 +13,19 @@ public class Parameter {
 	public Parameter() {
 	}
 
-	public boolean isRequired() {
-		return required == 1;
-	}
-
-	public int getRequired() {
+	public Object getRequired() {
 		return required;
 	}
 
+	public boolean isRequired() {
+		return required != null && (required instanceof Boolean ? (Boolean) required : ((Number) required).intValue() == 1);
+	}
+
 	public void setRequired(int required) {
+		this.required = required;
+	}
+
+	public void setRequired(boolean required) {
 		this.required = required;
 	}
 

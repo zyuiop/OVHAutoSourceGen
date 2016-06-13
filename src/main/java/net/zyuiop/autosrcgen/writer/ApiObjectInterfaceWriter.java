@@ -16,7 +16,7 @@ public class ApiObjectInterfaceWriter extends ClassWriter {
 	private final Model model;
 
 	public ApiObjectInterfaceWriter(Model model) {
-		super("api.objects." + model.getNamespace(), StringUtils.capitalize(model.getId()));
+		super("api.objects." + model.getNamespace().toLowerCase(), StringUtils.capitalize(model.getId()));
 		this.model = model;
 	}
 
@@ -32,26 +32,36 @@ public class ApiObjectInterfaceWriter extends ClassWriter {
 			String methods = "";
 			for (String propertyId : model.getProperties().keySet()) {
 				Property property = model.getProperties().get(propertyId);
+				String name;
 
-				TypeIdentifier typeIdentifier = AutomaticSourceGen.currentTypeIdentifier.get(property.getFullType());
-				if (typeIdentifier.getJavaFullName() != null)
-					writer.write("import " + typeIdentifier.getJavaFullName() + ";\n");
+				if (model.isGeneric(property.getFullType()))
+					name = property.getFullType();
+				else {
+					TypeIdentifier typeIdentifier = AutomaticSourceGen.currentTypeIdentifier.get(property.getFullType());
+					name = typeIdentifier.getJavaFullName();
+					if (name == null)
+						name = typeIdentifier.getJavaName();
+
+				}
 
 				methods += "	/**\n";
 				methods += "	 * @return " + property.getDescription() + "\n";
 				methods += "	 */\n";
 
-				methods += "	" + typeIdentifier.getJavaName() + " get" + StringUtils.capitalize(propertyId) + "(); \n\n";
+				methods += "	" + name + " get" + StringUtils.capitalize(propertyId) + "(); \n\n";
 			}
 
 			writer.write("/**\n");
 			writer.write(" * " + model.getDescription() + "\n");
 			writer.write(" */\n\n");
-			writer.write("public interface " + targetClassName + " { \n\n" + methods);
+			String generics = "";
+			if (model.getGenerics() != null)
+				generics = "<" + org.apache.commons.lang3.StringUtils.join(model.getGenerics(), ", ") + ">";
+			writer.write("public interface " + targetClassName + generics + " { \n\n" + methods);
 
 		}
 
-		AutomaticSourceGen.currentTypeIdentifier.register(new TypeIdentifier(model.getNamespace() + "." + model.getId(), targetClassName, "net.zyuiop.ovhapi." + targetPackage + "." + targetClassName));
+		AutomaticSourceGen.currentTypeIdentifier.register(new TypeIdentifier(model.getNamespace().toLowerCase() + "." + model.getId(), targetClassName, "net.zyuiop.ovhapi." + targetPackage + "." + targetClassName));
 
 		writer.write("}\n");
 

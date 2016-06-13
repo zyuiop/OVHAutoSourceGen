@@ -2,14 +2,15 @@ package net.zyuiop.autosrcgen;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
 import com.google.gson.Gson;
 import net.zyuiop.autosrcgen.json.Api;
 import net.zyuiop.autosrcgen.json.ApiDescriptorFile;
 import net.zyuiop.autosrcgen.json.Model;
+import net.zyuiop.autosrcgen.json.Operation;
 import net.zyuiop.autosrcgen.types.TypeMap;
-import net.zyuiop.autosrcgen.writer.ApiObjectImplWriter;
-import net.zyuiop.autosrcgen.writer.ApiObjectInterfaceWriter;
+import net.zyuiop.autosrcgen.writer.*;
+import net.zyuiop.autosrcgen.writer.methods.ApiMethod;
+import net.zyuiop.autosrcgen.writer.methods.PathWriter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -25,6 +26,7 @@ public class AutomaticSourceGen {
 	public static String target;
 	public static TypeMap currentTypeIdentifier = new TypeMap();
 	private static Queue<ApiDescriptorFile> descriptors = new ArrayDeque<>();
+	private static List<Model> notWritten = new ArrayList<>();
 
 	public static void main(String[] args) throws IOException {
 		String directory;
@@ -88,11 +90,45 @@ public class AutomaticSourceGen {
 				if (copy.size() > 0 && copy.size() == map.size()) {
 					System.out.println("*** An error occured ! Infinite loop interrupted in " + k + "th loop. ***");
 					System.out.println("*** Remaining classes to proceed : " + map);
+					notWritten.addAll(map.values());
 					break;
 				}
 			}
 
 			descriptors.add(descriptorFile);
+		}
+
+		System.out.println("Last chance write : " + notWritten.size() + " remaining entries.");
+
+		int k = 0;
+		while (!notWritten.isEmpty()) {
+			k++;
+			Iterator<Model> modelIterator = notWritten.iterator();
+			int size = notWritten.size();
+			while (modelIterator.hasNext()) {
+				Model model = modelIterator.next();
+				if (model.canWrite()) {
+					System.out.println(" |- Processing model " + model.getNamespace() + " / " + model.getId());
+
+					if (model.getEnumType() != null) {
+						modelIterator.remove();
+						continue;
+					}
+
+					// Création de l'interface
+					System.out.println("   |- Creating interface...");
+					new ApiObjectInterfaceWriter(model).write();
+					System.out.println("   |- Creating implementation...");
+					new ApiObjectImplWriter(model).write();
+					modelIterator.remove();
+				}
+			}
+
+			if (size == notWritten.size()) {
+				System.out.println("*** An error occured ! Infinite loop interrupted in " + k + "th loop. ***");
+				System.out.println("*** Remaining classes to proceed : " + modelIterator);
+				break;
+			}
 		}
 	}
 
@@ -100,36 +136,67 @@ public class AutomaticSourceGen {
 		System.out.println("- Processing APIs...");
 		Set<String> paths = new HashSet<>();
 
+		Set<PathDescriptor> descriptorSet = new HashSet<>();
 		for (ApiDescriptorFile descriptorFile : descriptors) {
-
+			Set<ApiMethod> methods = new HashSet<>();
 			for (Api api : descriptorFile.getApis()) {
 				paths.add(descriptorFile.getResourcePath() + api.getPath());
-			}
-		}
 
-		Multimap<String, String> created = HashMultimap.create();
-		for (String path : paths) {
-			String[] parts = path.split("/");
-			String previousFound = null;
-			for (int i = 0; i < parts.length; i++) {
-				String testString = StringUtils.join(Arrays.copyOfRange(parts, 0, i), "/");
-				if (created.containsKey(testString))
-					previousFound = testString;
-				else {
-					if (previousFound != null)
-						created.put(previousFound, parts[i]);
-					previousFound = testString;
+				String path = api.getPath();
+				String[] parts = path.split("/");
+				int i = 0;
+				for (String part : parts) {
+					if (part.startsWith("{") && part.endsWith("}")) {
+						parts[i] = "$" + part.substring(1, part.length() - 1);
+					}
+					i++;
+				}
+
+				for (Operation operation : api.getOperations()) {
+					methods.add(new ApiMethod(!operation.isNoAuthentication(), descriptorFile.getBasePath(), descriptorFile.getResourcePath() + "/", operation.getHttpMethod(), StringUtils.join(parts, "/"), operation.getDescription(), operation.getResponseType(), operation.getParameters()));
 				}
 			}
+
+			String[] parts = descriptorFile.getResourcePath().split("/");
+			String className = "";
+			String packageName = "api.methods";
+			String altPackageName = "impl.methods";
+			int i = 0;
+			for (String part : parts) {
+				if (part.length() < 1) {
+					i++;
+					continue;
+				}
+
+				if (i == parts.length - 1) {
+					className = StringUtils.capitalize(part);
+				} else {
+					packageName += "." + part.toLowerCase();
+					altPackageName += "." + part.toLowerCase();
+				}
+				i++;
+			}
+
+			PathWriter intWriter = new PathWriter(packageName, className, true, descriptorFile);
+			PathWriter clazzWriter = new PathWriter(altPackageName, className + "Impl", false, descriptorFile);
+			try {
+				intWriter.setMethodList(methods);
+				intWriter.write();
+				clazzWriter.setMethodList(methods);
+				clazzWriter.write();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			descriptorSet.add(new PathDescriptor(packageName, className, altPackageName, className + "Impl", descriptorFile));
 		}
 
-
-
-		// EN GROS :
-		// Si created[key + value] existe pas -> value est une méthode "directe" de key
-		// Si created[key + value] existe -> value est une classe (et une méthode de key, retournant une instance de cette classe)
-		// {truc} est toujours un paramètre. La méthode correspondante se nomme alors en fonction de l'opération (get/put/delete/post)
-
-		System.out.println(created);
+		System.out.println("- Processing main class...");
+		try {
+			new MainClassWriter(descriptorSet).write();
+			new MainInterfaceWriter(descriptorSet).write();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

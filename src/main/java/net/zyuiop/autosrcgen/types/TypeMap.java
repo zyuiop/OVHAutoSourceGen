@@ -9,14 +9,15 @@ public class TypeMap {
 	private HashMap<String, TypeIdentifier> map = new HashMap<>();
 
 	{
-		register(new TypeIdentifier("string", "String", null));
-		register(new TypeIdentifier("ip", "String", null));
-		register(new TypeIdentifier("ipv4", "String", null));
-		register(new TypeIdentifier("ipBlock", "String", null));
-		register(new TypeIdentifier("ipInterface", "String", null));
-		register(new TypeIdentifier("text", "String", null));
-		register(new TypeIdentifier("coreTypes.AccountId:string", "String", null));
-		register(new TypeIdentifier("password", "String", null));
+		register(new TypeIdentifier("string", "String", "java.lang.String"));
+		register(new TypeIdentifier("ip", "String", "java.lang.String"));
+		register(new TypeIdentifier("ipv4", "String", "java.lang.String"));
+		register(new TypeIdentifier("ipBlock", "String", "java.lang.String"));
+		register(new TypeIdentifier("phoneNumber", "String", "java.lang.String"));
+		register(new TypeIdentifier("ipInterface", "String", "java.lang.String"));
+		register(new TypeIdentifier("text", "String", "java.lang.String"));
+		register(new TypeIdentifier("coreTypes.AccountId:string", "String", "java.lang.String"));
+		register(new TypeIdentifier("password", "String", "java.lang.String"));
 		registerJavaType("boolean");
 		registerJavaType("double");
 		registerJavaType("long");
