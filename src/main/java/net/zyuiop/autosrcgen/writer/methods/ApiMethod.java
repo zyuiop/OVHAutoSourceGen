@@ -131,30 +131,30 @@ public class ApiMethod {
 					}
 				}
 
-				method += "\t\tString callUrl = " + callUrl + "\";\n";
+				method += "\t\tString __callUrl = " + callUrl + "\";\n";
 
 				if (!this.httpCode.equalsIgnoreCase("get")) {
-					method += "\t\tMap<Object, Object> dataMap = new HashMap<>();\n";
+					method += "\t\tMap<Object, Object> __dataMap = new HashMap<>();\n";
 					for (Parameter parameter : this.getParams(withFacultative)) {
 						if (parameter.getParamType().equalsIgnoreCase("body")) {
-							method += "\t\tdataMap.put(\"" + parameter.getName() + "\", " + JavaReserved.check(parameter.getName()) + ");\n";
+							method += "\t\t__dataMap.put(\"" + parameter.getName() + "\", " + JavaReserved.check(parameter.getName()) + ");\n";
 						}
 					}
-					method += "\t\tString data = new Gson().toJson(dataMap);\n";
+					method += "\t\tString __data = new Gson().toJson(__dataMap);\n";
 				} else {
-					method += "\t\tString data = \"?\";\n";
+					method += "\t\tString __data = \"?\";\n";
 					for (Parameter parameter : this.getParams(withFacultative)) {
 						if (parameter.getParamType().equalsIgnoreCase("body")) {
-							method += "\t\tdata += \"" + parameter.getName() + "=\" + " + JavaReserved.check(parameter.getName()) + ";\n";
+							method += "\t\t__data += \"" + parameter.getName() + "=\" + " + JavaReserved.check(parameter.getName()) + ";\n";
 						}
 					}
 				}
 
-				method += "\t\tOVHApiMethod method = OVHApiMethod." + httpCode + ";\n";
-				method += "\t\tURL url = new URL(callUrl);\n";
+				method += "\t\tOVHApiMethod __method = OVHApiMethod." + httpCode + ";\n";
+				method += "\t\tURL __url = new URL(__callUrl);\n";
 				method += "\t\t";
 				if (!this.returnType.equalsIgnoreCase("void")) method += "return new Gson().fromJson(";
-				method += "this.client.callRaw(url, method, data, " + Boolean.toString(hasAuth) + ")";
+				method += "this.client.callRaw(__url, __method, __data, " + Boolean.toString(hasAuth) + ")";
 				if (!this.returnType.equalsIgnoreCase("void")) {
 					TypeIdentifier identifier = AutomaticSourceGen.currentTypeIdentifier.get(this.returnType);
 					if (identifier == null) {
@@ -170,6 +170,11 @@ public class ApiMethod {
 				method += "\t}\n";
 			} catch (Exception e) {
 				System.out.println("*** Method " + httpCode + " " + path + " was not written. " + e.getMessage());
+				writer.write("\n\t/*" +
+						"\n\t* Method creation failed." +
+						"\n\t* Involved method : " + httpCode + " > " + path +
+						"\n\t* Message : " + e.getMessage() +
+						"\n\t*/\n\n");
 				return; // on écrit pas la méthode.
 			}
 			writer.write(method);

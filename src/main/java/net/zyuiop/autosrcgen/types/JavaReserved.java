@@ -15,6 +15,8 @@ public class JavaReserved {
 		reserved.add("class");
 		reserved.add("enum");
 		reserved.add("default");
+		reserved.add("interface");
+		reserved.add("return");
 	}
 
 	public static String check(String name) {

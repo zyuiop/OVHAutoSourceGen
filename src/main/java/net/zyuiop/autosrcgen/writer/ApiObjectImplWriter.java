@@ -50,6 +50,7 @@ public class ApiObjectImplWriter extends ClassWriter {
 
 				}
 
+				propertyId = propertyId.replaceAll("-", "");
 				String fName = JavaReserved.check(propertyId);
 
 				fields += "	private " + name + " " + fName + ";\n";

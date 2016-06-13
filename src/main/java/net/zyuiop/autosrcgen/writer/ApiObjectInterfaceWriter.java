@@ -44,6 +44,8 @@ public class ApiObjectInterfaceWriter extends ClassWriter {
 
 				}
 
+				propertyId = propertyId.replaceAll("-", "");
+
 				methods += "	/**\n";
 				methods += "	 * @return " + property.getDescription() + "\n";
 				methods += "	 */\n";
