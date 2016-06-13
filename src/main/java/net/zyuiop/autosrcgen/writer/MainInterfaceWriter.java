@@ -26,8 +26,8 @@ public class MainInterfaceWriter extends ClassWriter {
 				"\tvoid authenticate(String customerKey);\n\n");
 
 		writer.write("" +
-				"\tString callRaw(URL url, OVHApiMethod method, String data) throws IOException;\n\n" +
-				"\tString callRaw(URL url, OVHApiMethod method, String data, boolean hasAuth) throws IOException, IllegalStateException;\n\n");
+				"\tString callRaw(java.net.URL url, OVHApiMethod method, String data) throws java.io.IOException;\n\n" +
+				"\tString callRaw(java.net.URL url, OVHApiMethod method, String data, boolean hasAuth) throws java.io.IOException, IllegalStateException;\n\n");
 
 		for (PathDescriptor descriptor : descriptorSet) {
 			String apiName = "";
