@@ -25,6 +25,10 @@ public class MainInterfaceWriter extends ClassWriter {
 				"public interface OVHClient {\n" + "\n" +
 				"\tvoid authenticate(String customerKey);\n\n");
 
+		writer.write("" +
+				"\tString callRaw(URL url, OVHApiMethod method, String data) throws IOException;\n\n" +
+				"\tString callRaw(URL url, OVHApiMethod method, String data, boolean hasAuth) throws IOException, IllegalStateException;\n\n");
+
 		for (PathDescriptor descriptor : descriptorSet) {
 			String apiName = "";
 			for (String part : descriptor.getDescriptorFile().getResourcePath().split("/"))
