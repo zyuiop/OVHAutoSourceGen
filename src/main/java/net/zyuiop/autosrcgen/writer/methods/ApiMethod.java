@@ -121,12 +121,15 @@ public class ApiMethod {
 			try {
 				method += "\tpublic " + getMethodSkell(withFacultative) + " throws java.io.IOException {\n";
 				String[] parts = path.replace(parentApi, "").split("/");
-				String callUrl = "\"" + mainDomain;
+				String callUrl = "\"" + mainDomain + parentApi;
+				while (callUrl.endsWith("/"))
+					callUrl = callUrl.substring(0, callUrl.length() - 1);
+
 				for (String part : parts) {
 					if (part.startsWith("$")) {
 						String paramName = JavaReserved.check(part.substring(1));
 						callUrl += "/\" + " + paramName + " + \"";
-					} else {
+					} else if (part.length() > 0) {
 						callUrl += "/" + part;
 					}
 				}
@@ -162,6 +165,8 @@ public class ApiMethod {
 						throw new Exception("Missing identifier.");
 					}
 					String returnType = identifier.getJavaFullName() == null ? identifier.getJavaName() : identifier.getJavaFullName();
+					if (returnType.contains("net.zyuiop.ovhapi.api"))
+						returnType = returnType.replace("net.zyuiop.ovhapi.api.", "net.zyuiop.ovhapi.impl.") + "Impl";
 					method += ", " + returnType + ".class);\n";
 				} else {
 					method += ";\n";

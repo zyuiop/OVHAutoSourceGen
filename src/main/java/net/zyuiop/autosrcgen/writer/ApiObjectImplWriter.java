@@ -48,6 +48,8 @@ public class ApiObjectImplWriter extends ClassWriter {
 					if (name == null)
 						name = typeIdentifier.getJavaName();
 
+					if (name.contains("net.zyuiop.ovhapi.api"))
+						name = name.replace("net.zyuiop.ovhapi.api.", "net.zyuiop.ovhapi.impl.") + "Impl";
 				}
 
 				propertyId = propertyId.replaceAll("-", "");
