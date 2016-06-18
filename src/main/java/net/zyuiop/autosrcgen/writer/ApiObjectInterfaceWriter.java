@@ -42,6 +42,8 @@ public class ApiObjectInterfaceWriter extends ClassWriter {
 					if (name == null)
 						name = typeIdentifier.getJavaName();
 
+					if (property.getFullType().contains("[]") && !name.contains("[]"))
+						name = name + "[]";
 				}
 
 				propertyId = propertyId.replaceAll("-", "");

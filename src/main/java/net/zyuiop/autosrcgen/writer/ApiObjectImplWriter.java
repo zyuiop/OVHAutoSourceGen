@@ -50,6 +50,9 @@ public class ApiObjectImplWriter extends ClassWriter {
 
 					if (name.contains("net.zyuiop.ovhapi.api"))
 						name = name.replace("net.zyuiop.ovhapi.api.", "net.zyuiop.ovhapi.impl.") + "Impl";
+
+					if (property.getFullType().contains("[]") && !name.contains("[]"))
+						name = name + "[]";
 				}
 
 				propertyId = propertyId.replaceAll("-", "");

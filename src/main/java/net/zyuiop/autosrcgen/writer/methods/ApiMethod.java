@@ -1,5 +1,6 @@
 package net.zyuiop.autosrcgen.writer.methods;
 
+import com.google.gson.Gson;
 import net.zyuiop.autosrcgen.AutomaticSourceGen;
 import net.zyuiop.autosrcgen.json.Parameter;
 import net.zyuiop.autosrcgen.types.JavaReserved;
@@ -61,6 +62,9 @@ public class ApiMethod {
 				throw new Exception("Missing identifier.");
 			} else {
 				returnType = identifier.getJavaFullName() == null ? identifier.getJavaName() : identifier.getJavaFullName();
+
+				if (this.returnType.contains("[]") && !returnType.contains("[]"))
+					returnType = returnType + "[]";
 
 				if (methodName.equalsIgnoreCase("get")) {
 					String ret = identifier.getJavaName().replace("[]", "Array");
@@ -137,19 +141,53 @@ public class ApiMethod {
 				method += "\t\tString __callUrl = " + callUrl + "\";\n";
 
 				if (!this.httpCode.equalsIgnoreCase("get")) {
-					method += "\t\tMap<Object, Object> __dataMap = new HashMap<>();\n";
+					boolean nullParam = false;
 					for (Parameter parameter : this.getParams(withFacultative)) {
 						if (parameter.getParamType().equalsIgnoreCase("body")) {
-							method += "\t\t__dataMap.put(\"" + parameter.getName() + "\", " + JavaReserved.check(parameter.getName()) + ");\n";
+							if (parameter.getName() == null) {
+								method += "\t\tString __data = new Gson().toJson(param0);\n"; // seems to work, might not be good on every method
+								nullParam = true;
+							}
 						}
 					}
-					method += "\t\tString __data = new Gson().toJson(__dataMap);\n";
-				} else {
-					method += "\t\tString __data = \"?\";\n";
-					for (Parameter parameter : this.getParams(withFacultative)) {
-						if (parameter.getParamType().equalsIgnoreCase("body")) {
-							method += "\t\t__data += \"" + parameter.getName() + "=\" + " + JavaReserved.check(parameter.getName()) + ";\n";
+
+					if (!nullParam) {
+						method += "\t\tMap<Object, Object> __dataMap = new HashMap<>();\n";
+						for (Parameter parameter : this.getParams(withFacultative)) {
+							if (parameter.getParamType().equalsIgnoreCase("body")) {
+								method += "\t\t__dataMap.put(\"" + parameter.getName() + "\", " + JavaReserved.check(parameter.getName()) + ");\n";
+							}
 						}
+						method += "\t\tString __data = new Gson().toJson(__dataMap);\n";
+					}
+				} else {
+					List<String> tmp = new ArrayList<>();
+					int i = 0;
+					for (Parameter parameter : getParams(withFacultative)) {
+						TypeIdentifier identifier = AutomaticSourceGen.currentTypeIdentifier.get(parameter.getDataType());
+						if (identifier == null) {
+							continue;
+						}
+
+						String name = parameter.getName();
+						if (name == null)
+							name = "param" + (i++);
+						if (name.contains(".")) {
+							String[] k = name.split("\\.");
+							name = k[0];
+							for (String part : Arrays.copyOfRange(k, 1, k.length))
+								name += StringUtils.capitalize(part);
+						}
+						if (!parameter.getParamType().equalsIgnoreCase("body")) {
+							tmp.add("\t\t__data += \"" + parameter.getName() + "=\" + " + JavaReserved.check(name) + ";\n");
+						}
+					}
+
+					if (tmp.size() > 0) {
+						method += "\t\tString __data = \"?\";\n";
+						method += StringUtils.join(tmp, "");
+					} else {
+						method += "\t\tString __data = \"\";\n";
 					}
 				}
 
@@ -167,6 +205,9 @@ public class ApiMethod {
 					String returnType = identifier.getJavaFullName() == null ? identifier.getJavaName() : identifier.getJavaFullName();
 					if (returnType.contains("net.zyuiop.ovhapi.api"))
 						returnType = returnType.replace("net.zyuiop.ovhapi.api.", "net.zyuiop.ovhapi.impl.") + "Impl";
+					if (this.returnType.contains("[]") && !returnType.contains("[]"))
+						returnType = returnType + "[]";
+
 					method += ", " + returnType + ".class);\n";
 				} else {
 					method += ";\n";
