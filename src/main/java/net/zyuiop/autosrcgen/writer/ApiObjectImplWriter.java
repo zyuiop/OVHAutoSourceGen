@@ -1,11 +1,11 @@
 package net.zyuiop.autosrcgen.writer;
 
-import com.sun.xml.internal.ws.util.StringUtils;
 import net.zyuiop.autosrcgen.AutomaticSourceGen;
 import net.zyuiop.autosrcgen.json.Model;
 import net.zyuiop.autosrcgen.json.Property;
 import net.zyuiop.autosrcgen.types.JavaReserved;
 import net.zyuiop.autosrcgen.types.TypeIdentifier;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,7 +17,7 @@ public class ApiObjectImplWriter extends ClassWriter {
 	private final Model model;
 
 	public ApiObjectImplWriter(Model model) {
-		super("impl.objects." + model.getNamespace().toLowerCase(), StringUtils.capitalize(model.getId()) + "Impl");
+		super("api.objects." + model.getNamespace().toLowerCase(), StringUtils.capitalize(model.getId()));
 		this.model = model;
 	}
 
@@ -29,9 +29,6 @@ public class ApiObjectImplWriter extends ClassWriter {
 		if (model.getEnumType() != null) {
 			System.out.println("Aborting enum write.");
 		} else {
-			// Imports parent interface
-			writer.write("import net.zyuiop.ovhapi.api.objects." + model.getNamespace().toLowerCase() + "." + StringUtils.capitalize(model.getId()) + ";\n");
-
 			String methods = "";
 			String fields = "";
 			//List<String> constructor = new ArrayList<>();
@@ -48,8 +45,8 @@ public class ApiObjectImplWriter extends ClassWriter {
 					if (name == null)
 						name = typeIdentifier.getJavaName();
 
-					if (name.contains("net.zyuiop.ovhapi.api"))
-						name = name.replace("net.zyuiop.ovhapi.api.", "net.zyuiop.ovhapi.impl.") + "Impl";
+					/*if (name.contains("net.zyuiop.ovhapi.api"))
+						name = name.replace("net.zyuiop.ovhapi.api.", "net.zyuiop.ovhapi.impl.") + "Impl";*/
 
 					if (property.getFullType().contains("[]") && !name.contains("[]"))
 						name = name + "[]";
@@ -84,7 +81,7 @@ public class ApiObjectImplWriter extends ClassWriter {
 			if (model.getGenerics() != null)
 				generics = "<" + org.apache.commons.lang3.StringUtils.join(model.getGenerics(), ", ") + ">";
 
-			writer.write("public class " + targetClassName + generics + " implements " + StringUtils.capitalize(model.getId()) + generics + " { \n\n");
+			writer.write("public class " + targetClassName + generics + " { \n\n");
 			writer.write(fields + "\n");
 			writer.write("\tpublic " + targetClassName + "() {\n\t}\n\n");
 			writer.write(methods);

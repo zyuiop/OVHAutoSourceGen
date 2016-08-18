@@ -203,8 +203,10 @@ public class ApiMethod {
 						throw new Exception("Missing identifier.");
 					}
 					String returnType = identifier.getJavaFullName() == null ? identifier.getJavaName() : identifier.getJavaFullName();
-					if (returnType.contains("net.zyuiop.ovhapi.api"))
+					/*if (returnType.contains("net.zyuiop.ovhapi.api"))
 						returnType = returnType.replace("net.zyuiop.ovhapi.api.", "net.zyuiop.ovhapi.impl.") + "Impl";
+						Removed : no objects implementations anymore
+						*/
 					if (this.returnType.contains("[]") && !returnType.contains("[]"))
 						returnType = returnType + "[]";
 

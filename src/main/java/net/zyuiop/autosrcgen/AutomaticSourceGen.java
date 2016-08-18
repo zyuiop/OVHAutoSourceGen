@@ -1,14 +1,15 @@
 package net.zyuiop.autosrcgen;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import net.zyuiop.autosrcgen.json.Api;
 import net.zyuiop.autosrcgen.json.ApiDescriptorFile;
 import net.zyuiop.autosrcgen.json.Model;
 import net.zyuiop.autosrcgen.json.Operation;
 import net.zyuiop.autosrcgen.types.TypeMap;
-import net.zyuiop.autosrcgen.writer.*;
+import net.zyuiop.autosrcgen.writer.ApiObjectImplWriter;
+import net.zyuiop.autosrcgen.writer.MainClassWriter;
+import net.zyuiop.autosrcgen.writer.MainInterfaceWriter;
+import net.zyuiop.autosrcgen.writer.PathDescriptor;
 import net.zyuiop.autosrcgen.writer.methods.ApiMethod;
 import net.zyuiop.autosrcgen.writer.methods.PathWriter;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +17,13 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.*;
+import java.security.CodeSource;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * @author zyuiop
@@ -38,8 +45,12 @@ public class AutomaticSourceGen {
 			directory = s.nextLine();
 		}
 
-		System.out.print("Target main/ directory ? ");
-		target = s.nextLine();
+		if (args.length > 1)
+			target = args[1];
+		else {
+			System.out.print("Target main/ directory ? ");
+			target = s.nextLine();
+		}
 
 		File dirFile = new File(directory);
 		treat(dirFile);
@@ -79,8 +90,8 @@ public class AutomaticSourceGen {
 						}
 
 						// Création de l'interface
-						System.out.println("   |- Creating interface...");
-						new ApiObjectInterfaceWriter(model).write();
+						/*System.out.println("   |- Creating interface...");
+						new ApiObjectInterfaceWriter(model).write();*/
 						System.out.println("   |- Creating implementation...");
 						new ApiObjectImplWriter(model).write();
 						map.remove(modelName);
@@ -116,8 +127,8 @@ public class AutomaticSourceGen {
 					}
 
 					// Création de l'interface
-					System.out.println("   |- Creating interface...");
-					new ApiObjectInterfaceWriter(model).write();
+					//System.out.println("   |- Creating interface...");
+					//new ApiObjectInterfaceWriter(model).write();
 					System.out.println("   |- Creating implementation...");
 					new ApiObjectImplWriter(model).write();
 					modelIterator.remove();
@@ -197,6 +208,37 @@ public class AutomaticSourceGen {
 			new MainInterfaceWriter(descriptorSet).write();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+
+		CodeSource src = AutomaticSourceGen.class.getProtectionDomain().getCodeSource();
+		if (src != null) {
+			URL jar = src.getLocation();
+			try {
+				URI uri = URI.create("jar:file:" + jar.toURI().getPath());
+
+				FileSystem system;
+				try {
+					system = FileSystems.newFileSystem(uri, new HashMap<>());
+					Stream<Path> stream = Files.walk(system.getPath("/raw/"));
+
+					stream.forEach(path -> {
+						if (Files.isDirectory(path))
+							return;
+
+						Path target = Paths.get(AutomaticSourceGen.target + "/java/net/zyuiop/ovhapi/", path.toString().replace("/raw/", ""));
+						try {
+							System.out.println("- Copying " + path + " to " + target);
+							Files.copy(path, target, StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					});
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
