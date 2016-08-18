@@ -85,7 +85,7 @@ public class Model {
 		if (enumType != null) {
 			TypeIdentifier identifier = AutomaticSourceGen.currentTypeIdentifier.get(enumType);
 			if (identifier == null) {
-				System.out.println("x|-> Can't write " + getNamespace() + "." + getId() + " yet : missing " + enumType);
+				System.out.println("x|-> Can't write " + getNamespace() + "." + getId() + " yet : missing enum " + enumType);
 				return false;
 			}
 
@@ -98,7 +98,7 @@ public class Model {
 				continue;
 
 			if (AutomaticSourceGen.currentTypeIdentifier.get(property.getFullType()) == null) {
-				System.out.println("  x|-> Can't write " + getNamespace() + "." + getId() + " yet : missing " + property.getFullType());
+				System.out.println("  x|-> Can't write " + getNamespace() + "." + getId() + " yet : missing class " + property.getFullType());
 				return false;
 			}
 		}

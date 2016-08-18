@@ -29,4 +29,13 @@ public class TypeIdentifier {
 	public TypeIdentifier arrayCopy() {
 		return new TypeIdentifier(restName + "[]", javaName + "[]", javaFullName);
 	}
+
+	@Override
+	public String toString() {
+		return "TypeIdentifier{" +
+				"restName='" + restName + '\'' +
+				", javaName='" + javaName + '\'' +
+				", javaFullName='" + javaFullName + '\'' +
+				'}';
+	}
 }

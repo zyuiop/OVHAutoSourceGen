@@ -87,6 +87,7 @@ public class ApiObjectImplWriter extends ClassWriter {
 			writer.write(methods);
 		}
 
+		AutomaticSourceGen.currentTypeIdentifier.register(new TypeIdentifier(model.getNamespace().toLowerCase() + "." + model.getId(), targetClassName, "net.zyuiop.ovhapi." + targetPackage + "." + targetClassName));
 
 		writer.write("}\n");
 
