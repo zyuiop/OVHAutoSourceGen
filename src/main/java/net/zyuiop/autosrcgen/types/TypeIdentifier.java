@@ -26,8 +26,16 @@ public class TypeIdentifier {
 		return javaFullName;
 	}
 
+	private String arrayRestName(String restName) {
+		if (restName.contains(":")) {
+			String[] parts = restName.split(":");
+			return arrayRestName(parts[0]) + ":" + arrayRestName(parts[1]);
+		}
+		return restName + "[]";
+	}
+
 	public TypeIdentifier arrayCopy() {
-		return new TypeIdentifier(restName + "[]", javaName + "[]", javaFullName);
+		return new TypeIdentifier(arrayRestName(restName), javaName + "[]", javaFullName);
 	}
 
 	@Override

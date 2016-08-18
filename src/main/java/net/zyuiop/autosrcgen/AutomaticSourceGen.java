@@ -1,10 +1,8 @@
 package net.zyuiop.autosrcgen;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import net.zyuiop.autosrcgen.json.Api;
-import net.zyuiop.autosrcgen.json.ApiDescriptorFile;
-import net.zyuiop.autosrcgen.json.Model;
-import net.zyuiop.autosrcgen.json.Operation;
+import net.zyuiop.autosrcgen.json.*;
 import net.zyuiop.autosrcgen.types.TypeMap;
 import net.zyuiop.autosrcgen.writer.ApiObjectImplWriter;
 import net.zyuiop.autosrcgen.writer.MainClassWriter;
@@ -31,7 +29,7 @@ import java.util.stream.Stream;
 public class AutomaticSourceGen {
 	private static final Gson gson = new Gson();
 	public static String target;
-	public static TypeMap currentTypeIdentifier = new TypeMap();
+	public static final TypeMap currentTypeIdentifier = new TypeMap();
 	private static Queue<ApiDescriptorFile> descriptors = new ArrayDeque<>();
 	private static List<Model> notWritten = new ArrayList<>();
 

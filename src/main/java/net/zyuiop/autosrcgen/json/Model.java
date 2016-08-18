@@ -25,6 +25,14 @@ public class Model {
 	public Model() {
 	}
 
+	public Model(String namespace, String id, String description, List<String> generics, Map<String, Property> properties) {
+		this.namespace = namespace;
+		this.id = id;
+		this.description = description;
+		this.generics = generics;
+		this.properties = properties;
+	}
+
 	public String getNamespace() {
 		return namespace;
 	}
@@ -89,7 +97,7 @@ public class Model {
 				return false;
 			}
 
-			AutomaticSourceGen.currentTypeIdentifier.register(new TypeIdentifier(getNamespace() + "." + getId(), identifier.getJavaName(), identifier.getJavaFullName()));
+			AutomaticSourceGen.currentTypeIdentifier.register(new TypeIdentifier(getNamespace().toLowerCase() + "." + getId(), identifier.getJavaName(), identifier.getJavaFullName()));
 			return true; // TODO : may not work
 		}
 

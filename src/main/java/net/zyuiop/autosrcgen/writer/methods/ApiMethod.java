@@ -58,7 +58,7 @@ public class ApiMethod {
 		if (!this.returnType.equalsIgnoreCase("void")) {
 			TypeIdentifier identifier = AutomaticSourceGen.currentTypeIdentifier.get(this.returnType);
 			if (identifier == null) {
-				System.out.println("*** Missing identifier for " + this.returnType + " while generating " + httpCode + " " + path);
+				System.out.println("*** Missing identifier for " + this.returnType + " while generating method skel for " + httpCode + " " + path);
 				throw new Exception("Missing identifier.");
 			} else {
 				returnType = identifier.getJavaFullName() == null ? identifier.getJavaName() : identifier.getJavaFullName();

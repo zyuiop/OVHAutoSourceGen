@@ -13,6 +13,12 @@ public class Property {
 	public Property() {
 	}
 
+	public Property(int canBeNull, String type, String description) {
+		this.canBeNull = canBeNull;
+		this.type = type;
+		this.description = description;
+	}
+
 	public String getFullType() {
 		return fullType == null ? type : fullType;
 	}
